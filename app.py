@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 import pickle
 
 # Corrected file paths for loading vectorizer and model
@@ -32,6 +32,20 @@ def predict():
     predictions = 1 if predictions == 1 else -1
 
     return render_template("index.html", prediction=predictions, text=email_text)
+
+@app.route("/api/preict", methods=["POST"])
+def api_predict():
+    data = request.get_json(force=True)
+    email_text = data["content"]
+    tokenized_email = cv.transform([email_text])  # Wrapped `email_text` in a list
+    
+    # Predict using the loaded model and handle prediction format
+    predictions = model.predict(tokenized_email)[0]  # Get the single prediction
+    
+    # Adjust predictions to 1 or -1
+    predictions = 1 if predictions == 1 else -1
+
+    return jsonify({prediction: prediction})
 
 if __name__ == "__main__":
     app.run(debug=True)
